@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Вхід лікаря — МОЗ</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Вхід до кабінету лікаря</h1>
+    <form id="login-form">
+      <input type="text" id="username" placeholder="Логін лікаря" required />
+      <input type="password" id="password" placeholder="Пароль" required />
+      <button type="submit">Увійти</button>
+    </form>
+    <p id="login-error" style="color: red; display: none;">Невірний логін або пароль</p>
+  </main>
+
+  <script>
+    // Імітована база лікарів
+    const doctors = [
+      { username: "dr.koval", password: "12345", fullName: "Коваль Ірина", specialty: "Кардіолог" },
+      { username: "dr.bondar", password: "qwerty", fullName: "Бондар Олег", specialty: "Педіатр" }
+    ];
+
+    document.getElementById("login-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const doctor = doctors.find(d => d.username === username && d.password === password);
+      
+      if (doctor) {
+        localStorage.setItem("loggedDoctor", JSON.stringify(doctor));
+        window.location.href = "personal-cabinet.html";
+      } else {
+        document.getElementById("login-error").style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

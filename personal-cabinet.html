@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Особистий кабінет лікаря</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1rem;
+      max-width: 700px;
+      margin: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    button.status-btn {
+      padding: 0.2rem 0.5rem;
+      margin-right: 0.3rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Особистий кабінет лікаря</h1>
+    <div id="doctor-info"></div>
+
+    <h2>Записи пацієнтів</h2>
+    <table id="appointments-table">
+      <thead>
+        <tr>
+          <th>Пацієнт</th>
+          <th>Дата</th>
+          <th>Час</th>
+          <th>Контакт</th>
+          <th>Статус</th>
+          <th>Дія</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button onclick="logout()">Вийти</button>
+  </main>
+
+  <script>
+    const doctorData = JSON.parse(localStorage.getItem("loggedDoctor"));
+    if (!doctorData) {
+      window.location.href = "doctor-login.html";
+    } else {
+      document.getElementById("doctor-info").innerHTML = `
+        <p><strong>Ім'я:</strong> ${doctorData.fullName}</p>
+        <p><strong>Спеціальність:</strong> ${doctorData.specialty}</p>
+      `;
+    }
+
+    // Отримати записи з localStorage або ініціалізувати
+    function getAppointments() {
+      const stored = localStorage.getItem("appointments");
+      if (stored) return JSON.parse(stored);
+      // Перший запуск — створимо базу з демо-записами
+      const demo = [
+        {
+          id: 1,
+          doctor: "dr.koval",
+          patient: "Іван Петренко",
+          date: "2025-06-20",
+          time: "10:00",
+          contact: "+380631234567",
+          status: "Очікує"
+        },
+        {
+          id: 2,
+          doctor: "dr.koval",
+          patient: "Марія Сидорова",
+          date: "2025-06-21",
+          time: "14:30",
+          contact: "+380501112233",
+          status: "Підтверджено"
+        },
+        {
+          id: 3,
+          doctor: "dr.bondar",
+          patient: "Олексій Гончар",
+          date: "2025-06-22",
+          time: "09:00",
+          contact: "+380671234567",
+          status: "Очікує"
+        }
+      ];
+      localStorage.setItem("appointments", JSON.stringify(demo));
+      return demo;
+    }
+
+    // Зберегти записи
+    function saveAppointments(data) {
+      localStorage.setItem("appointments", JSON.stringify(data));
+    }
+
+    // Відмалювати таблицю
+    function renderAppointments() {
+      const appointments = getAppointments();
+      const filtered = appointments.filter(app => app.doctor === doctorData.username);
+      const tbody = document.querySelector("#appointments-table tbody");
+      tbody.innerHTML = "";
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6">Записів немає.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(app => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${app.patient}</td>
+          <td>${app.date}</td>
+          <td>${app.time}</td>
+          <td>${app.contact}</td>
+          <td>${app.status}</td>
+          <td>
+            <button class="status-btn" onclick="changeStatus(${app.id}, 'Підтверджено')">✔️ Підтвердити</button>
+            <button class="status-btn" onclick="changeStatus(${app.id}, 'Відмінено')">❌ Відмінити</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Змінити статус запису
+    function changeStatus(id, newStatus) {
+      const appointments = getAppointments();
+      const index = appointments.findIndex(app => app.id === id);
+      if (index !== -1) {
+        appointments[index].status = newStatus;
+        saveAppointments(appointments);
+        renderAppointments();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedDoctor");
+      window.location.href = "doctor-login.html";
+    }
+
+    renderAppointments();
+  </script>
+</body>
+</html>
